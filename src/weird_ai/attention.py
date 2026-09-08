@@ -20,10 +20,10 @@ class SimpleSelfAttention(nn.Module):
         """
 
         # TODO:
-        # 1. Compute attention scores using matrix multiplication.
-        # 2. Normalize scores with softmax.
-        # 3. Compute context vectors as weighted sums of input vectors.
-
+        attention_scores = torch.matmul(x, x.T)
+        weight = torch.softmax(attention_scores, dim=-1)
+        vectors = torch.matmul(weight, x)
+        return vectors, weight
         raise NotImplementedError("Implement simple self-attention.")
 
 class SelfAttention(nn.Module):
@@ -47,12 +47,13 @@ class SelfAttention(nn.Module):
             context_vectors: Tensor of shape (num_tokens, output_dim)
             attention_weights: Tensor of shape (num_tokens, num_tokens)
         """
-
-        # TODO:
-        # 1. Compute queries, keys, and values.
-        # 2. Compute scaled attention scores.
-        # 3. Apply softmax.
-        # 4. Compute context vectors.
+        query = self.query(x)
+        key = self.key(x)
+        value = self.value(x)
+        attention_scores = torch.matmul(query, key.T) / (key.shape[-1] ** 0.5)
+        attention_weights = torch.softmax(attention_scores, dim=-1)
+        context_vectors = torch.matmul(attention_weights, value)
+        return context_vectors, attention_weights
 
         raise NotImplementedError("Implement trainable self-attention.")
 
@@ -83,12 +84,16 @@ class CausalAttention(nn.Module):
             context_vectors: Tensor of shape (batch_size, num_tokens, output_dim)
         """
 
-        # TODO:
-        # 1. Compute keys, queries, and values.
-        # 2. Compute scaled attention scores.
-        # 3. Mask future tokens.
-        # 4. Apply softmax.
-        # 5. Apply dropout.
-        # 6. Compute context vectors.
+        key = self.key(x)
+        query = self.query(x)
+        value = self.value(x)
+
+        attention_scores = torch.matmul(query, key.transpose(1, 2)) / (key.shape[-1])
+        attention_scores = attention_scores.masked_fill(self.mask[:x.size(1), :x.size(1)] == 1, float('-inf'))
+
+        weight = torch.softmax(attention_scores, dim=-1)
+        weight = self.dropout(weight)
+        vector = torch.matmul(weight, value)
+        return vector
 
         raise NotImplementedError("Implement causal attention.")
