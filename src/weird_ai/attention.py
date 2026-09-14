@@ -50,7 +50,7 @@ class SelfAttention(nn.Module):
         query = self.query(x)
         key = self.key(x)
         value = self.value(x)
-        attention_scores = torch.matmul(query, key.T) / (key.shape[-1] ** 0.5)
+        attention_scores = torch.matmul(query, key.transpose(-2, -1)) / (key.shape[-1] ** 0.5)
         attention_weights = torch.softmax(attention_scores, dim=-1)
         context_vectors = torch.matmul(attention_weights, value)
         return context_vectors, attention_weights
