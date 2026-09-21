@@ -24,8 +24,12 @@ def text_to_token_ids(text, tokenizer):
     # 1. Use the tokenizer to encode the text.
     # 2. Convert the encoded list into a torch tensor.
     # 3. Add a batch dimension using unsqueeze(0).
+    token_ids = tokenizer.encode(text)
+    token_ids_tensor = torch.tensor(token_ids).unsqueeze(0)
+    batch_dimension = token_ids_tensor.unsqueeze(0)
+    return torch.tensor(batch_dimension, dtype=torch.long)
 
-    raise NotImplementedError("Implement text_to_token_ids.")
+
 
 
 def token_ids_to_text(token_ids, tokenizer):
@@ -44,6 +48,11 @@ def token_ids_to_text(token_ids, tokenizer):
     # 1. Remove the batch dimension if present.
     # 2. Convert the tensor to a Python list.
     # 3. Use the tokenizer to decode the list.
+    batch_removed = token_ids.squeeze(0)
+    token_ids_list = batch_removed.tolist()
+    token_ids_text = tokenizer.decode(token_ids_list)
+    return token_ids_text
+
 
     raise NotImplementedError("Implement token_ids_to_text.")
 
@@ -69,6 +78,15 @@ def generate_text_simple(model, input_ids, max_new_tokens, context_size):
     # 3. Select only the logits for the last time step.
     # 4. Use argmax to choose the most likely next token.
     # 5. Append that token to input_ids.
+    input_ids = input_ids.to(model.device)
+    for _ in range(max_new_tokens):
+        cropped_input = input_ids[:, -context_size:]
+        logits = model(cropped_input)
+        last_logits = logits[:, -1, :]
+        next_token_id = torch.argmax(last_logits, dim=-1, keepdim=True)
+        input_ids = torch.cat((input_ids, next_token_id), dim=1)
+
+    
 
     raise NotImplementedError("Implement generate_text_simple.")
 
@@ -97,5 +115,10 @@ def generate_and_print_sample(model, tokenizer, device, start_context, context_s
     # 3. Generate new token IDs.
     # 4. Convert generated token IDs back to text.
     # 5. Print the generated text.
+    start_context_ids = text_to_token_ids(start_context, tokenizer).to(device)
+    generated_ids = generate_text_simple(model, start_context_ids, max_new_tokens, context_size
+    )
+    generated_text = token_ids_to_text(generated_ids, tokenizer)
+    print(f"Generated text:\n{generated_text}")
 
-    raise NotImplementedError("Implement generate_and_print_sample.")
+ 
