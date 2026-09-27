@@ -16,7 +16,8 @@ def evaluate_model(
     train_loader,
     val_loader,
     device,
-    eval_iter
+    eval_iter,
+    
 ):
     """
     Evaluate the model on a limited number of training and validation batches.
@@ -127,12 +128,14 @@ def train_model_simple(
                 track_tokens_seen.append(tokens_seen)
                 print(f"Step {global_step}: Train Loss = {train_loss:.4f}, Val Loss = {val_loss:.4f}, Tokens Seen = {tokens_seen}")
 
+                
+
             pass
             model.train()
         # TODO:
         # At the end of each epoch, generate and print a sample.
         # This helps visually inspect whether the model is improving.
-    generate_and_print_sample(
+        generate_and_print_sample(
             model=model,
             tokenizer=tokenizer,
             device=device,
@@ -211,10 +214,5 @@ def load_checkpoint(
     checkpoint = torch.load(checkpoint_path, map_location=device)
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    meta_data ={
-        'epoch': checkpoint['epoch'],
-        'train_losses': checkpoint['train_losses'],
-        'val_losses': checkpoint['val_losses'], 
-        'track_tokens_seen': checkpoint['track_tokens_seen']
-    }
-    return meta_data
+
+    return checkpoint
