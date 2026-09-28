@@ -18,6 +18,7 @@ def main():
     vocab_size = len(tokenizer.stoi)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = WeirdAIModel(vocab_size,CONTEXT_LENGTH,emb_dim = 256)
+    model = model.to(device)
     train_ratio = .9
     split_idx = int(train_ratio * len(text))
     train_text = text[:split_idx]
@@ -53,22 +54,26 @@ def main():
     eval_iter = 5
     start_context = "Fart"
     context_size = 128
-
-
-
-
-
-    train_losses, val_losses, track_tokens_seen = train_model_simple(model,train_loader,val_loader,optimizer,device,num_epochs,eval_freq,eval_iter,start_context,tokenizer,context_size)
-    CHECKPOINT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    save_checkpoint(
-        model,
-        optimizer,
-        num_epochs,
-        train_losses,
-        val_losses,
-        track_tokens_seen,
-        CHECKPOINT_PATH,
-    )
+    train_losses, val_losses, track_tokens_seen = [], [], []
+    try:
+        train_losses, val_losses, track_tokens_seen = train_model_simple(
+            model, train_loader, val_loader, optimizer, device,
+            num_epochs, eval_freq, eval_iter, start_context, tokenizer, context_size
+        )
+    except KeyboardInterrupt:
+        print("The Oh Shit Save")
+    finally:
+        CHECKPOINT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        save_checkpoint(
+            model,
+            optimizer,
+            num_epochs,
+            train_losses,
+            val_losses,
+            track_tokens_seen,
+            CHECKPOINT_PATH,
+        )
+        print(f"Checkpoint saved to {CHECKPOINT_PATH}")
     # TODO:
     # 1. Load training data
     # 2. Create optimizer
