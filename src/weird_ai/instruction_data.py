@@ -3,6 +3,9 @@ Instruction data formatting utilities for Weird AI.
 """
 
 
+
+
+
 def format_input(entry):
     """
     Format one instruction example using an Alpaca-style prompt.
@@ -14,8 +17,14 @@ def format_input(entry):
     # 2. Add the ### Instruction section.
     # 3. Add the ### Input section only when entry["input"] is not empty.
     # 4. Return the complete prompt.
+    instruction = entry["instruction"]
+    input_text = entry["input"]
 
-    raise NotImplementedError("Implement format_input.")
+    prompt = f"### Instruction:\n{instruction}\n\n"
+    if input_text:
+        prompt += f"### Input:\n{input_text}\n\n"
+
+    return prompt
 
 
 def format_response(entry):
@@ -26,7 +35,7 @@ def format_response(entry):
     # TODO:
     # Return a string like:
     # "\n\n### Response:\n..."
-
+    return f"\n\n### Response:\n{entry['output']}"
     raise NotImplementedError("Implement format_response.")
 
 
@@ -37,6 +46,7 @@ def format_full_example(entry):
 
     # TODO:
     # Combine format_input(entry) and format_response(entry).
+    return format_input(entry) + format_response(entry)
 
     raise NotImplementedError("Implement format_full_example.")
 
@@ -49,5 +59,10 @@ def validate_instruction_entry(entry):
     # TODO:
     # Check for instruction, input, and output keys.
     # Verify that instruction and output are not empty.
+    if not all(key in entry for key in ["instruction", "input", "output"]):
+        return False
 
-    raise NotImplementedError("Implement validate_instruction_entry.")
+    if not entry["instruction"] or not entry["output"]:
+       return False
+
+    return True 
