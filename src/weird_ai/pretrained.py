@@ -225,7 +225,7 @@ def generate_text(
             temperature=temperature,
             top_k=top_k,
             do_sample=do_sample,
-            pad_token_id=tokenizer.pad_token_id,
+            pad_token_id=tokenizer.eos_token_id,
         )
     # 7. Decode the generated token IDs with decode_generated_tokens().
     generated_text = decode_generated_tokens(tokenizer, generated_tokens)

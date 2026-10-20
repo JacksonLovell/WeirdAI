@@ -29,8 +29,6 @@ def main():
 
     train_dataset = LyricsDataset(train_tokens, CONTEXT_LENGTH)
     val_dataset = LyricsDataset(val_tokens, CONTEXT_LENGTH)
-
-    #setting up params
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
@@ -74,12 +72,6 @@ def main():
             CHECKPOINT_PATH,
         )
         print(f"Checkpoint saved to {CHECKPOINT_PATH}")
-    # TODO:
-    # 1. Load training data
-    # 2. Create optimizer
-    # 3. Implement training loop
-    # 4. Save checkpoints
-
     print("Training complete.")
 if __name__ == "__main__":
     main()
