@@ -17,4 +17,4 @@ class LyricsDataset:
         x = torch.tensor(self.tokens[index:index + self.block_size])
         y = torch.tensor(self.tokens[index + 1:index + 1 + self.block_size])
         return x, y
-    
+
