@@ -47,6 +47,11 @@ def get_score(evaluation: dict, score_key: str = "overall_score") -> float:
     # 1. Read score_key from the evaluation dictionary.
     # 2. Convert it to a float.
     # 3. If the key is missing or cannot be converted, return 0.0.
+    score = evaluation.get(score_key, 0.0)
+    try:
+        return float(score) 
+    except (ValueError, TypeError):
+        return 0.0  
 
     raise NotImplementedError("Implement get_score.")
 
@@ -72,6 +77,7 @@ def build_refinement_prompt(
     # 7. Ask the model to return only the revised lyrics.
     #
     # Keep the prompt specific. "Make it better" is too vague.
+    
 
     raise NotImplementedError("Implement build_refinement_prompt.")
 
@@ -102,6 +108,17 @@ def refine_once(
     #
     # This function should not decide whether to continue the full loop.
     # It only performs one attempt.
+    evaluation = evaluation_func(current_text)
+    refined_text = generation_func(build_refinement_prompt(
+        original_prompt,
+        current_text,
+        evaluation,
+        focus=focus,
+        preserve=preserve,
+        score_key=score_key,
+    ), temperature=temperature, top_p=top_p, max_new_tokens=max_new_tokens, **kwargs)
+    revised_evaluation = evaluation_func(refined_text)
+
 
     raise NotImplementedError("Implement refine_once.")
 
@@ -122,6 +139,21 @@ def choose_better_text(
     # 2. If require_improvement is True, accept only strictly higher scores.
     # 3. If require_improvement is False, accept equal scores as well.
     # 4. Return the selected text, selected evaluation, and whether the revision was accepted.
+    current_score = get_score(current_evaluation, score_key)
+    revised_score = get_score(revised_evaluation, score_key)
+    if require_improvement:
+        if revised_score > current_score:
+            return revised_text, revised_evaluation, True
+        else:
+            return current_text, current_evaluation, False
+
+    else:
+        if revised_score >= current_score:
+            return revised_text, revised_evaluation, True
+        else:
+            return current_text, current_evaluation, False
+
+    return current_text, current_evaluation, False          
 
     raise NotImplementedError("Implement choose_better_text.")
 
@@ -139,9 +171,18 @@ def should_continue(
 
     # TODO:
     # 1. Stop if iteration has reached max_iterations.
+
     # 2. Stop if target_score is set and current_score is high enough.
     # 3. Stop if stop_on_no_improvement is True and last_improved is False.
     # 4. Otherwise continue.
+
+    if iteration >= max_iterations:
+        return False
+    if target_score is not None and current_score >= target_score:
+        return False
+    if stop_on_no_improvement and not last_improved:
+        return False
+    continue_loop = True
 
     raise NotImplementedError("Implement should_continue.")
 
@@ -174,6 +215,9 @@ def iterative_refinement(
     # 5. Return a result dictionary with the initial and final information.
     #
     # Be careful to avoid infinite loops.
+    evaluation = evaluation_func(initial_text)
+    current_text = initial_text
+    refinement_steps = []
 
     raise NotImplementedError("Implement iterative_refinement.")
 
